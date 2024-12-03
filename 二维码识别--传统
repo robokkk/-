@@ -1,0 +1,40 @@
+import cv2
+
+# 初始化 QRCode 检测器
+qrDecoder = cv2.QRCodeDetector()
+
+# 打开摄像头 (0 为默认摄像头，1为外接摄像头)
+cap = cv2.VideoCapture(1)
+
+while True:
+    # 从摄像头捕获一帧
+    ret, img = cap.read()
+    if not ret:
+        print("无法从摄像头读取图像")
+        break
+
+
+    data, bbox, straight_qrcode = qrDecoder.detectAndDecode(img)
+    if bbox is not None and len(bbox) > 0 and len(bbox[0]) == 4:
+        points = bbox[0]
+        top_left = (int(points[0][0]), int(points[0][1]))
+        bottom_right = (int(points[2][0]), int(points[2][1]))
+
+        cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 2)
+
+        text_position = (top_left[0], top_left[1] - 10)
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_color = (0, 0, 255)  # 红色
+        thickness = 1
+
+        cv2.putText(img, data, text_position, font, font_scale, font_color, thickness)
+
+    cv2.imshow("Image with QR Code", img)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
